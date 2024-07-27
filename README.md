@@ -667,7 +667,162 @@ display_yearly_average_images(yearly_average_images, roi_coords)
 
 #### 3. Sobel gradient
 
- **sobel gradient for 6 yearly images**
+**3.1 sobel gradient for average daily images**
+```console
+import os
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+def calculate_sobel_gradient(image):
+    # Calculate the gradient using the Sobel operator
+    gradient_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+    
+    # Compute the magnitude of the gradient
+    gradient_magnitude = np.sqrt(gradient_x**2 + gradient_y**2)
+    
+    return gradient_magnitude
+
+def plot_gradient_image(gradient_image, date_key, output_dir, roi_coords):
+    # Plot the gradient image
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': ccrs.PlateCarree()})
+    extent = [50.717442, 51.693314, 24.455254, 26.226590]
+    im = ax.imshow(gradient_image, cmap='viridis', extent=extent, origin='upper')
+    ax.coastlines(resolution='10m')
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.LAND, edgecolor='black')
+
+    # Plot ROI polygon as a closed loop
+    ax.plot(roi_coords[:, 0], roi_coords[:, 1], color='white', linewidth=2)
+    ax.plot([roi_coords[-1, 0], roi_coords[0, 0]], [roi_coords[-1, 1], roi_coords[0, 1]], color='white', linewidth=2)
+
+    cbar = fig.colorbar(im, ax=ax, orientation='vertical', fraction=0.046, pad=0.04)
+    cbar.set_label('Sobel Gradient Magnitude', fontweight='bold')
+    plt.title(f'Sobel Gradient {date_key}', loc='center', fontweight='bold')
+    plt.axis('off')
+    
+    # Save the plot at 300 DPI
+    output_file = os.path.join(output_dir, f'Sobel_Gradient_{date_key}.png')
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def process_images(main_directory, roi_coords):
+    # Create an output directory for the gradient images
+    output_dir = os.path.join(main_directory, 'sobel_gradients')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Iterate over all subdirectories in the main directory
+    for subdir in os.listdir(main_directory):
+        subdir_path = os.path.join(main_directory, subdir)
+        if os.path.isdir(subdir_path):
+            # Find the average image in the subdirectory
+            for file_name in os.listdir(subdir_path):
+                if file_name.startswith('Average_Image') and file_name.endswith('.tif'):
+                    image_path = os.path.join(subdir_path, file_name)
+                    image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+                    if image is None:
+                        print("Error: Unable to read image from:", image_path)
+                    else:
+                        gradient_image = calculate_sobel_gradient(image)
+                        plot_gradient_image(gradient_image, subdir, output_dir, roi_coords)
+
+# Define the coordinates for the ROI (Region of Interest)
+roi_coords = np.array([
+    [50.717442, 24.455254],
+    [51.693314, 24.455254],
+    [51.693314, 26.226590],
+    [50.717442, 26.226590],
+    [50.717442, 24.455254]
+])
+
+# Main directory containing the average images
+main_directory = r"C:\Users\Wajeeha\Desktop\AverageImages"
+
+# Process all images in the main directory
+process_images(main_directory, roi_coords)
+```
+
+**3.2 sobel gradient for 12 average monthly images**
+```console
+import os
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+from matplotlib.patches import Polygon
+from shapely.geometry import Polygon as ShapelyPolygon
+from shapely.ops import transform
+import cartopy.crs as ccrs
+import cartopy.feature as cfeature
+
+def calculate_sobel_gradient(image):
+    # Calculate the gradient using the Sobel operator
+    gradient_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
+    gradient_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
+    
+    # Compute the magnitude of the gradient
+    gradient_magnitude = np.sqrt(gradient_x**2 + gradient_y**2)
+    
+    return gradient_magnitude
+
+def plot_gradient_image(gradient_image, subdir_name, image_name, output_dir, roi_coords):
+    # Plot the gradient image
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw={'projection': ccrs.PlateCarree()})
+    extent = [50.717442, 51.693314, 24.455254, 26.226590]
+    im = ax.imshow(gradient_image, cmap='viridis', extent=extent, origin='upper')
+    ax.coastlines(resolution='10m')
+    ax.add_feature(cfeature.BORDERS, linestyle=':')
+    ax.add_feature(cfeature.LAND, edgecolor='black')
+
+    # Plot ROI polygon as a closed loop
+    ax.plot(roi_coords[:, 0], roi_coords[:, 1], color='white', linewidth=2)
+    ax.plot([roi_coords[-1, 0], roi_coords[0, 0]], [roi_coords[-1, 1], roi_coords[0, 1]], color='white', linewidth=2)
+
+    cbar = fig.colorbar(im, ax=ax, orientation='vertical', fraction=0.046, pad=0.04)
+    cbar.set_label('Carbon monoxide Column Number Density(mol/m^2)', fontweight='bold')
+    plt.title(f'Sobel Gradient {image_name[:2]}', loc='center', fontweight='bold')
+    plt.axis('off')
+    
+    # Save the plot at 300 DPI
+    output_file = os.path.join(output_dir, f'Sobel_Gradient_{image_name[:2]}.png')
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
+    plt.close()
+
+def process_images_in_directory(folder_path, roi_coords):
+    # Iterate over all files in the directory
+    for file_name in os.listdir(folder_path):
+        if file_name.endswith('.tif'):
+            image_path = os.path.join(folder_path, file_name)
+            image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
+            if image is None:
+                print("Error: Unable to read image from:", image_path)
+            else:
+                subdir_name = os.path.basename(folder_path)
+                gradient_image = calculate_sobel_gradient(image)
+                plot_gradient_image(gradient_image, subdir_name, os.path.splitext(file_name)[0], folder_path, roi_coords)
+
+# Define the coordinates for the ROI (Region of Interest)
+roi_coords = np.array([
+    [50.717442, 24.455254],
+    [51.693314, 24.455254],
+    [51.693314, 26.226590],
+    [50.717442, 26.226590],
+    [50.717442, 24.455254]
+])
+
+# Example usage: Specify the folder containing TIFF files
+folder_path = r"C:\Users\Wajeeha\Desktop\monty average"
+
+# Process all images in the directory
+process_images_in_directory(folder_path, roi_coords)
+```
+
+ **3.3 sobel gradient for 6 yearly images (2018-2023)**
 
 ```console
 import os
