@@ -63,7 +63,7 @@ The Root Mean Square Error (RMSE) for each month is calculated against the real 
       [51.693314, 26.226590]]])
 
  "Define the time range"
- start_date = '2022-1-1'
+ start_date = '2018-11-22'
  end_date = '2023-12-31'
 
 "Convert start and end dates to datetime objects"
