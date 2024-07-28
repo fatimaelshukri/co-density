@@ -9,17 +9,17 @@ This section is code to obtain TIF Files from Google Earth Engine (GEE).
 In this program the code uses an API from GEE to open the data set and obtain an image with the given start and end data and with the given longitude and latitude.
 
 1.2 to generate CSV File with min/max carbon monoxide density.
-the code for this will a CSV File that contains the minimum and maximum carbon monoxide values  from the images extracted from the GEE.
+the code for this will a CSV File that contains the minimum and maximum carbon monoxide values from the images extracted from the GEE.
 
 ## 2. Average images
 
-Using the mean average formula, the average image is found by calculating the average carbon monoxide density mol/m^2 (i.e. pixel value) at that point over the range (novemeber 22 2018 - Dec 31 2023). There are 3 types of averages:
+Using the mean average formula, the average image is found by calculating the average carbon monoxide density mol/m^2 (i.e. pixel value) at that point over the range (novemeber 22 2018 - Dec 31 2023). There are 5 types of averages:
 
 - Daily: This creates an average based on the day (e.g. Jan-1-2013, Jan-1-2014, Jan-1-2015 etc.)
 - Monthly: This average is based on the pixel values for the complete month form each year
 - monthly per year: this creates an average for each month (jan-dec) for its corresponding year thus outpting 12 images for each year between 2018-2023.  
  (72 images in total)
-- yearly- a singular averaged image for each year, that is a result after averaing the monthly per year images. ( 2018 to 2023= 6 yearly images ) 
+- yearly- a singular averaged image for each year, that is a result after averaging the monthly per year images. ( 2018 to 2023= 6 yearly images ) 
 - Annual (Overall): This average is computed using the entire years data (i.e. every image, therefore it is also called the overall average)
 
 ## 3. thresholding
@@ -31,19 +31,19 @@ The purpose of thresholding is to classify each pixel in an image based on its v
 The Sobel Gradient is a method of finding the gradient with respect to its adjacent and diagonally connected neighbours. There is a vertical and horizontal operator, and the magnitude of the gradient is calculated. it highlights areas where there are significant changes in pixel values
 
 ## 5. Linear Regression Prediction
-Using Linear Regression, the Carbon monoxide density for each month is detected for teh year 2024 and 202.
+Using Linear Regression, the Carbon monoxide density for each month is detected for the year 2024 and 2025.
       5.1 Generate Regression Prediction Images
-Induvidual pixels are predicted using pixels from the monthly per images (72 images,from 2018 to 2023) to train the regressison model to predict for the year 2024 and then using those 72 images and the newly formed monthly predicted images for 2024 (84 images) to predict for 2025.
+Individual pixels are predicted using pixels from the monthly per images (72 images,from 2018 to 2023) to train the regressison model to predict for the year 2024 and then using those 72 images and the newly formed monthly predicted images for 2024 (84 images) we will predict for 2025.
 
 ## 6. Calculate RMSE
 The Root Mean Square Error (RMSE) for each month is calculated against the real images of 2024. 
 
 ## 7. extra codes : 
-   7.1  generation of graphs using histograms and the GaussianMixture model (GMM) function to and to depict fluctuations in the mean Carbon Monoxide Density(mol/m^2) throughout the 12 months of each year between 2018-2023
+   7.1  generation of graphs using histograms and the GaussianMixture model (GMM) function to depict the fluctuations in Carbon Monoxide Density(mol/m^2) (mean co density fluctuations)throughout the months for each year between 2018-2023.
 
    7.2  colormapping images for visual representation
    
-   7.3 to generate missing dates from the GEE to show me the missing dates where there were missing dates that the erath engine could not capture images for that day. (unavailability of datset for that day from the date range specified)
+   7.3 to generate missing dates from the GEE, the missing dates where the erath engine could not capture images for that day. (unavailability of datset for that day from the date range specified)
 
 1.  **Data Collection**.
 ```console
